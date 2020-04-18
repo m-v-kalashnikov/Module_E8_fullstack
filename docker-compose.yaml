@@ -1,25 +1,11 @@
 version: '3.7'
 services:
 
-    flask:
-        build: ./backend
-        container_name: flask
-#        restart: always
-        command: gunicorn -w 4 -b 0.0.0.0:5000 app:app
-        ports:
-            - "5000:5000"
-        environment:
-            - DATABASE_URL=postgresql://postgres:sesamunlock@postgres:5432/module_e8
-        depends_on:
-            - postgres
-            - redis
-        entrypoint: ["./boot.sh"]
-
 
     postgres:
         container_name: postgres
         image: postgres:12
-#        restart: always
+        restart: always
         environment:
             - POSTGRES_USER=postgres
             - POSTGRES_PASSWORD=sesamunlock
@@ -35,6 +21,21 @@ services:
             - "6379:6379"
 
 
+    flask:
+        build: ./backend
+        container_name: flask
+        restart: always
+        command: gunicorn -w 4 -b 0.0.0.0:5000 app:app
+        ports:
+            - "5000:5000"
+        environment:
+            - DATABASE_URL=postgresql://postgres:sesamunlock@postgres:5432/module_e8
+        depends_on:
+            - postgres
+            - redis
+        entrypoint: ["./boot.sh"]
+
+
     celery:
         build: ./backend
         container_name: celery
@@ -45,5 +46,13 @@ services:
         depends_on:
             - redis
             - postgres
-#            - flask
+            - flask
         entrypoint:  ["./celery.sh"]
+
+
+#    nginx:
+#        build: ./nginx
+#        container_name: nginx
+#        restart: always
+#        ports:
+#            - "8000:8000"
